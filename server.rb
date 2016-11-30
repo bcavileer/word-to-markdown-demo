@@ -30,6 +30,9 @@ module WordToMarkdownServer
     end
 
     post "/raw" do
+      cross_origin :allow_origin => '*',
+                   :allow_methods => [:post]
+
       file = Tempfile.new('word-to-markdown')
       File.write file.path, request.env["rack.request.form_vars"]
       markdown = WordToMarkdown.new(file.path).to_s
