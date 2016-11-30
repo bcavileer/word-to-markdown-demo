@@ -3,6 +3,7 @@ require 'sinatra'
 require 'html/pipeline'
 require 'rack/coffee'
 require 'tempfile'
+require 'rack/cors'
 
 module WordToMarkdownServer
   class App < Sinatra::Base
@@ -14,6 +15,13 @@ module WordToMarkdownServer
     end
 
     use Rack::Coffee, root: 'public', urls: '/assets/javascripts'
+
+    use Rack::Cors do
+      allow do
+        origins '*'
+        resource '/raw', :headers => :any, :methods => :post
+      end
+    end
 
     get "/" do
       render_template :index, { :error => nil }
@@ -30,9 +38,6 @@ module WordToMarkdownServer
     end
 
     post "/raw" do
-      cross_origin :allow_origin => '*',
-                   :allow_methods => [:post]
-
       file = Tempfile.new('word-to-markdown')
       File.write file.path, request.env["rack.request.form_vars"]
       markdown = WordToMarkdown.new(file.path).to_s
